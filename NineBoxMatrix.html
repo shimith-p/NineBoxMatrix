@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nine Box Matrix</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="Nine box matrix based on PotentialRange and PerformanceRange">
+    <meta name="keywords" content="Nineboxmatrix,Nine,box,matrix,PotentialRange,PerformanceRange,succession planning,succession,planning">
+    <meta name="author" content="Shimith P">
+    <!-- Other meta tags as needed -->
+	<link rel="stylesheet" type="text/css" href="ninebox.css">
+	 
+</head>
+<body>  
+	<div class="div_main" style="width:800px; height:800px;">
+	   <div class="flt" style="width:25px; height:750px;">
+		  <div class="gen_hed pg_ret full" style="width:50px; height:250px;">
+			 <div style="transform: rotate(-90deg); width:750px; height:750px;" class="full gen_tittxt txt_aln2">Potential Score</div>
+		  </div>
+	   </div>
+	   <div class="flt" style="width:25px; height:750px;">
+		  <div class="gen_hed pg_ret flt" style="width:25px; height:250px;">
+			 <div style="transform: rotate(-90deg);" class="text_rot90">High Score</div>
+		  </div>
+		  <div class="gen_hed pg_ret flt" style="width:25px; height:250px;">
+			 <div style="transform: rotate(-90deg);" class="text_rot90">Medium Score</div>
+		  </div>
+		  <div class="gen_hed pg_ret flt" style="width:25px; height:250px;">
+			 <div style="transform: rotate(-90deg);" class="text_rot90">Low Score</div>
+		  </div>
+	   </div>
+	   <div class="flt matrix_canvas" style="width:750px; height:750px;" id="RangeCanvas">
+		  <canvas id="myCanvas" width="750" height="750" style="border: 1px solid #d3d3d3;z-index:2;position:relative"></canvas>
+	   </div>
+	   <div class="full" style="width:800px; height:25px; padding-left:50px;">
+		  <div class="gen_hed pg_ret flt" style="width:250px; height:25px;">Low Score</div>
+		  <div class="gen_hed pg_ret flt" style="width:250px; height:25px;">Medium Score</div>
+		  <div class="gen_hed pg_ret flt" style="width:250px; height:25px;">High Score</div>
+	   </div>
+	   <div class="full gen_tittxt txt_aln2" style="width:800px; height:25px; padding-left:50px;">Performance Score</div>
+	   <div id="canvas_popup"></div>
+	</div>
+	
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script>
+	var c = document.getElementById("myCanvas");
+	var ctx = c.getContext("2d"); 
+	var boxs = [
+		{ x: 0, y: 0, style: "#ffeca2" },
+		{ x: 0, y: 250, style: "#ffc1b9" },
+		{ x: 0, y: 500, style: "#ffc1b9" },
+
+		{ x: 250, y: 0, style: "#d6eb99" },
+		{ x: 250, y: 250, style: "#ffeca2" },
+		{ x: 250, y: 500, style: "#ffc1b9" },
+
+		{ x: 500, y: 0, style: "#d6eb99" },
+		{ x: 500, y: 250, style: "#d6eb99" },
+		{ x: 500, y: 500, style: "#ffeca2" },
+	];
+	for (var i in boxs) {
+		var o = boxs[i];
+		ctx.fillStyle = o.style;
+		ctx.fillRect(o.x, o.y, 250, 250);
+		ctx.stroke();
+		ctx.strokeStyle = "#fff";
+		ctx.lineWidth = 1;
+		ctx.strokeRect(o.x, o.y, 250, 250);
+	}
+	var RangeRatio = [
+		{ PotentialRange: "L", PerformanceRange: "L", x1: 0, x2: 250, y1: 500, y2: 750, Box: "Risk", Col:"#f95e1e" },
+		{ PotentialRange: "L", PerformanceRange: "M", x1: 251, x2: 500, y1: 500, y2: 750, Box: "Average Performer", Col: "#f95e1e" },
+		{ PotentialRange: "L", PerformanceRange: "H", x1: 501, x2: 750, y1: 500, y2: 750, Box: "Solid Performer", Col: "#c5a714" },
+		{ PotentialRange: "M", PerformanceRange: "L", x1: 0, x2: 250, y1: 250, y2: 499, Box: "Inconsistant Player", Col: "#f95e1e" },
+		{ PotentialRange: "M", PerformanceRange: "M", x1: 251, x2: 500, y1: 250, y2: 499, Box: "Core Player", Col: "#c5a714" },
+		{ PotentialRange: "M", PerformanceRange: "H", x1: 501, x2: 750, y1: 250, y2: 499, Box: "High Performer", Col: "#74b749" },
+		{ PotentialRange: "H", PerformanceRange: "L", x1: 0, x2: 250, y1: 0, y2: 250, Box: "Potential Gem", Col: "#c5a714" },
+		{ PotentialRange: "H", PerformanceRange: "M", x1: 251, x2: 500, y1: 0, y2: 250, Box: "High Potential", Col: "#74b749" },
+		{ PotentialRange: "H", PerformanceRange: "H", x1: 501, x2: 750, y1: 0, y2: 250, Box: "Star", Col: "#74b749" } 
+	];
+	w = 750;
+	h = 750;
+	var total = 100;
+	var Result = []; 
+	var plots = [
+				  {
+					"employeeCode": "1001",
+					"employeeName": "Employee 1",
+					"score": "100",
+					"position": "Manager",
+					"department": "Development",
+					"worklocation": "Bangalore",
+					"potentialScore": 93,
+					"performanceScore": 60,
+					"potentialRange": PotentialRange(93),
+					"performanceRange": PerformanceRange(60)
+				  },
+				  {
+					"employeeCode": "1002",
+					"employeeName": "Employee 2",
+					"score": "100",
+					"position": "Manager",
+					"department": "Development",
+					"worklocation": "Bangalore",
+					"potentialScore": 100,
+					"performanceScore": 100,
+					"potentialRange": PotentialRange(100),
+					"performanceRange": PerformanceRange(100)
+				  },
+				  {
+					"employeeCode": "1003",
+					"employeeName": "Employee 3",
+					"score": "100",
+					"position": "Manager",
+					"department": "Development",
+					"worklocation": "Bangalore",
+					"potentialScore": 25,
+					"performanceScore": 60,
+					"potentialRange": PotentialRange(25),
+					"performanceRange": PerformanceRange(60)
+				  }
+				];
+	
+		plots.forEach(function (val, index) { 
+			Range = RangeRatio.filter(obj => obj.PotentialRange == val.potentialRange && obj.PerformanceRange == val.performanceRange);
+			var x = (((Range[0].x2 - Range[0].x1) / total) * val.performanceScore) + Range[0].x1;
+			var y_actual = ((((Range[0].y2 - Range[0].y1) / total) * val.potentialScore) + Range[0].y1);
+			var y = (Range[0].y2 - y_actual) + Range[0].y1;
+			val['x'] = x;
+			val['y'] = y;
+			val['Box'] = Range[0].Box;
+			val['Col'] = Range[0].Col;
+			Result.push(val);
+			const circle = new Path2D();
+			circle.arc(x, y, 5, 0, 2 * Math.PI, true);
+			ctx.fillStyle = "#9d9595";
+			ctx.fill(circle); 
+			c.addEventListener('click', function (event) { 
+				if (ctx.isPointInPath(circle, event.offsetX, event.offsetY)) {  
+					DisplayEmployee(val);
+				}  
+			});
+			c.addEventListener('mousemove', function (event) { 
+				if (ctx.isPointInPath(circle, event.offsetX, event.offsetY)) {
+					event.target.style.cursor = "pointer";
+					ctx.fillStyle = 'green';
+				} else {
+					ctx.fillStyle = '#9d9595';   
+				}
+				ctx.fill(circle);
+			});
+			c.addEventListener('mouseout', function (event) { 
+				ctx.fillStyle = '#9d9595';  
+				ctx.fill(circle); 
+			});  
+			 
+			document.body.style.cursor = "pointer"; 
+		}); 
+		
+		var Risksrc = Result.filter(obj => obj.x >= 0 && obj.x <= 250 && obj.y >= 500 && obj.y <= 750); 
+		var RiskCount = Risksrc.length; 
+
+		var Averagesrc = Result.filter(obj => obj.x >= 251 && obj.x <= 500 && obj.y >= 500 && obj.y <= 750); 
+		var AverageCount = Averagesrc.length; 
+
+		var Solidsrc = Result.filter(obj => obj.x >= 501 && obj.x <= 750 && obj.y >= 500 && obj.y <= 750); 
+		var SolidCount = Solidsrc.length; 
+
+		var Incosrc = Result.filter(obj => obj.x >= 0 && obj.x <= 250 && obj.y >= 250 && obj.y <= 499); 
+		var IncoCount = Incosrc.length; 
+
+		var Coresrc = Result.filter(obj => obj.x >= 251 && obj.x <= 500 && obj.y >= 250 && obj.y <= 499); 
+		var CoreCount = Coresrc.length; 
+
+		var Highsrc = Result.filter(obj => obj.x >= 501 && obj.x <= 750 && obj.y >= 250 && obj.y <= 499); 
+		var HighCount = Highsrc.length; 
+
+		var Potentialsrc = Result.filter(obj => obj.x >= 0 && obj.x <= 250 && obj.y >= 0 && obj.y <= 250); 
+		var PotentialCount = Potentialsrc.length; 
+
+		var HPotentialsrc = Result.filter(obj => obj.x >= 251 && obj.x <= 500 && obj.y >= 0 && obj.y <= 250); 
+		var HPotentialCount = HPotentialsrc.length; 
+
+		var Starsrc = Result.filter(obj => obj.x >= 501 && obj.x <= 750 && obj.y >= 0 && obj.y <= 250); 
+		var StarCount = Starsrc.length; 
+		
+		ctx.font = "bold 20px Calibri, sans-serif";
+		ctx.fillStyle = "#c5a714";
+		ctx.fillText(PotentialCount, 125, 125);
+		ctx.fillText("Potential Gem", 80, 30);
+		ctx.fillStyle = "#74b749";
+		ctx.fillText(HPotentialCount, 375, 125);
+		ctx.fillText("High Potential", 330, 30);
+		ctx.fillText(StarCount, 625, 125);
+		ctx.fillText("Star", 610, 30);
+
+		ctx.fillStyle = "#f95e1e";
+		ctx.fillText(IncoCount, 125, 375);
+		ctx.fillText("Inconsistant Player", 50, 290);
+		ctx.fillStyle = "#c5a714";
+		ctx.fillText(CoreCount, 375, 375);
+		ctx.fillText("Core Player", 320, 290);
+		ctx.fillStyle = "#74b749";
+		ctx.fillText(HighCount, 625, 375);
+		ctx.fillText("High Performer", 560, 290);
+
+		ctx.fillStyle = "#f95e1e";
+		ctx.fillText("Risk", 110, 540);
+		ctx.fillText(RiskCount, 125, 625);
+		ctx.fillText("Average Performer", 300, 540);
+		ctx.fillText(AverageCount, 375, 625);
+		ctx.fillStyle = "#c5a714";
+		ctx.fillText(SolidCount, 625, 625);
+		ctx.fillText("Solid Performer", 560, 540);
+		
+		function PotentialRange(PotentialScore){
+			var Range = "L"; 
+			if (PotentialScore >= 0 && PotentialScore <= 30)
+			{
+				Range = "L"; 
+			}
+			if (PotentialScore >= 31 && PotentialScore <= 60)
+			{
+				Range = "M"; 
+			}
+			if (PotentialScore >= 61 && PotentialScore <= 100)
+			{
+				Range = "H"; 
+			} 
+			return Range;
+		}
+		function PerformanceRange(PerformanceScore){
+			var Range = "L"; 
+			if (PerformanceScore >= 0 && PerformanceScore <= 30)
+			{
+				Range = "L"; 
+			}
+			if (PerformanceScore >= 31 && PerformanceScore <= 60)
+			{
+				Range = "M"; 
+			}
+			if (PerformanceScore >= 61 && PerformanceScore <= 100)
+			{
+				Range = "H"; 
+			} 
+			return Range;
+		}
+		function DisplayEmployee(val) {  
+			var str = "<div class='container'>"; 
+			str = str + "<div id='canvas_close' style='float: right;'><b>X</b></div>";
+			str = str + "<div class='employee-details'>";
+			str = str + "<h2>Employee Details</h2>";
+			str = str + "<p>Name: " + val.employeeCode + " - " + val.employeeName + "</p>";
+			str = str + "<p>Position: " + val.position + "</p>";
+			str = str + "<p>Department: " + val.department + ", " + val.worklocation + "</p>";
+			str = str + "</div>";
+			str = str + "<h2>Ranges</h2>";
+			str = str + "<p>Potential Range: " + val.potentialScore + "</p>";
+			str = str + "<p>Performance Range: " + val.performanceScore + "</p>";
+			str = str + "<p style='color:"+val.Col+"'><b>" + val.Box +"</b></p>";
+			str = str + "</div>"; 
+			$("#canvas_popup").html(str);
+			$("#canvas_popup").addClass("pg_tabs box_incont mag_t bord6 pad1");
+			$("#canvas_popup").attr("style", "width: 320px; z-index:9; left:293px;");
+			$(canvas_popup).show();
+			$("#canvas_close").click(function () {
+				$("#canvas_popup").hide(); 
+			}); 
+			return false;
+		}
+</script> 
+</body>
+</html>
+
+
+
+
+
+
+
